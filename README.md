@@ -16,28 +16,6 @@ O programa resolve isso de um jeito simples:
 
 Os materiais aceitos são papel, plástico, vidro, metal e eletrônicos.
 
-## Como rodar
-
-Precisa de Python 3.10 ou mais novo (o menu usa `match/case`). Não tem nenhuma biblioteca externa.
-
-```
-git clone https://github.com/samiaafreitas/mini-projeto-python.git
-cd mini-projeto-python
-python main.py
-```
-
-No Linux/Mac pode ser `python3 main.py`.
-
-O programa já começa com dois pontos de coleta, duas cooperativas e dois moradores cadastrados, pra dar pra testar direto. Os dados ficam só na memória, então somem quando o programa fecha.
-
-Um teste rápido pelo menu:
-
-1. opção 2, registrar uma entrega de plástico sujo;
-2. opção 5, ver que ele está na triagem e não no estoque;
-3. opção 3, fazer a triagem;
-4. opção 4, mandar o lote de plástico pra Coopagres;
-5. opção 6, ver o relatório.
-
 ## Como o código está organizado
 
 - `materiais.py`: `MaterialReciclavel` e as filhas `Papel`, `Plastico`, `Metal`, `Vidro` e `Eletronico`
