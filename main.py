@@ -106,6 +106,31 @@ def enviar_lote(central):
         print(f"Lote enviado: {lote}")
 
 
+def historico_morador(central):
+    morador = escolher(central.moradores, "Qual morador?")
+    if morador is None:
+        return
+    entregas = morador.get_entregas()
+    if len(entregas) == 0:
+        print(f"{morador.nome} ainda não fez nenhuma entrega.")
+        return
+    for entrega in entregas:
+        print(f"  {entrega}")
+    print(f"Total: {morador.total_entregue_kg():.2f} kg")
+
+
+def historico_cooperativa(central):
+    cooperativa = escolher(central.cooperativas, "Qual cooperativa?")
+    if cooperativa is None:
+        return
+    lotes = cooperativa.get_lotes()
+    if len(lotes) == 0:
+        print(f"Nenhum lote enviado pra {cooperativa.nome} ainda.")
+        return
+    for lote in lotes:
+        print(f"  {lote}")
+
+
 def menu():
     print("\n===== PontoVerde =====")
     print("1 - Cadastrar morador")
@@ -113,6 +138,9 @@ def menu():
     print("3 - Triagem")
     print("4 - Enviar lote")
     print("5 - Ver estoque")
+    print("6 - Relatório")
+    print("7 - Histórico de morador")
+    print("8 - Lotes por cooperativa")
     print("0 - Sair")
     return input("Opção: ").strip()
 
@@ -132,6 +160,12 @@ def main():
                 enviar_lote(central)
             case "5":
                 central.mostrar_estoque()
+            case "6":
+                central.relatorio()
+            case "7":
+                historico_morador(central)
+            case "8":
+                historico_cooperativa(central)
             case "0":
                 print("Até mais!")
                 break
