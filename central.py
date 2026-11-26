@@ -1,155 +1,82 @@
 from materiais import TIPOS
-from participantes import Entrega, Lote
 
 
-def peso_entregue(morador):
-    return morador.total_entregue_kg()
-
-
-class CentralReciclagem:
-    def __init__(self, nome, capacidade_kg):
+class Central:
+    def __init__(self, nome, capacidade):
         self.nome = nome
-        self._capacidade_kg = capacidade_kg
-        self._estoque = {}
+        self.capacidade = capacidade
+        self.estoque = {}
         for tipo in TIPOS:
-            self._estoque[tipo] = []
-        self._aguardando_triagem = []
-        self._entregas = []
-        self._lotes = []
+            self.estoque[tipo] = 0
+        self.triagem = []
         self.moradores = []
-        self.pontos = []
         self.cooperativas = []
+        self.total_recebido = 0
+        self.total_enviado = 0
 
-    def get_capacidade(self):
-        return self._capacidade_kg
-
-    def peso_em_estoque(self, tipo=None):
+    def peso_total(self):
         total = 0
-        if tipo is None:
-            for lista in self._estoque.values():
-                for material in lista:
-                    total += material.get_peso()
-            for material in self._aguardando_triagem:
-                total += material.get_peso()
-        else:
-            for material in self._estoque[tipo]:
-                total += material.get_peso()
+        for peso in self.estoque.values():
+            total += peso
+        for material in self.triagem:
+            total += material.get_peso()
         return total
 
-    def ocupacao(self):
-        return self.peso_em_estoque() / self._capacidade_kg * 100
-
-    def buscar_morador(self, nome):
-        for morador in self.moradores:
-            if morador.nome.lower() == nome.lower():
-                return morador
-        return None
-
-    def cadastrar_morador(self, morador):
-        if self.buscar_morador(morador.nome) is not None:
-            return False
-        self.moradores.append(morador)
-        return True
-
-    def registrar_entrega(self, morador, ponto, material):
-        if self.peso_em_estoque() + material.get_peso() > self._capacidade_kg:
-            livre = self._capacidade_kg - self.peso_em_estoque()
-            print(f"Entrega recusada: só cabem mais {livre:.2f} kg na central.")
+    def registrar_entrega(self, morador, material):
+        if self.peso_total() + material.get_peso() > self.capacidade:
+            print("Não cabe mais na central, precisa mandar um lote antes.")
             return False
 
-        entrega = Entrega(morador, ponto, material)
-        morador.adicionar_entrega(entrega)
-        ponto.adicionar_entrega(entrega)
-        self._entregas.append(entrega)
+        morador.entregas.append(material)
+        self.total_recebido += material.get_peso()
 
         if material.precisa_triagem():
-            self._aguardando_triagem.append(material)
+            self.triagem.append(material)
         else:
-            self._estoque[material.get_tipo()].append(material)
+            self.estoque[material.tipo] += material.get_peso()
 
-        self.verificar_capacidade()
+        if self.peso_total() >= self.capacidade * 0.8:
+            print("Aviso: a central está quase cheia!")
         return True
 
-    def verificar_capacidade(self):
-        ocupacao = self.ocupacao()
-        if ocupacao >= 90:
-            print(f"ALERTA: central com {ocupacao:.0f}% da capacidade, precisa mandar lote o quanto antes.")
-        elif ocupacao >= 75:
-            print(f"Aviso: central com {ocupacao:.0f}% da capacidade.")
-
-    def get_aguardando_triagem(self):
-        return self._aguardando_triagem
-
     def fazer_triagem(self):
-        quantidade = len(self._aguardando_triagem)
-        for material in self._aguardando_triagem:
-            material.fazer_triagem()
-            self._estoque[material.get_tipo()].append(material)
-        self._aguardando_triagem = []
-        return quantidade
+        for material in self.triagem:
+            material.limpo = True
+            self.estoque[material.tipo] += material.get_peso()
+        self.triagem = []
 
     def enviar_lote(self, tipo, cooperativa):
         if not cooperativa.aceita(tipo):
-            print(f"{cooperativa.nome} não recebe {tipo}.")
-            return None
-        if len(self._estoque[tipo]) == 0:
-            print(f"Não tem {tipo} pronto pra envio.")
-            return None
+            print(f"A {cooperativa.nome} não recebe {tipo}.")
+            return
+        if self.estoque[tipo] == 0:
+            print(f"Não tem {tipo} no estoque.")
+            return
 
-        lote = Lote(tipo, self._estoque[tipo], cooperativa)
-        cooperativa.receber_lote(lote)
-        self._lotes.append(lote)
-        self._estoque[tipo] = []
-        return lote
+        peso = self.estoque[tipo]
+        cooperativa.lotes.append(f"{tipo} - {peso} kg")
+        self.total_enviado += peso
+        self.estoque[tipo] = 0
+        print(f"Lote de {peso} kg de {tipo} enviado pra {cooperativa.nome}.")
 
     def mostrar_estoque(self):
-        print(f"\nEstoque da {self.nome}")
+        print(f"\nEstoque da {self.nome}:")
         for tipo in TIPOS:
-            print(f"  {tipo:<12} {self.peso_em_estoque(tipo):>8.2f} kg")
-        peso_triagem = 0
-        for material in self._aguardando_triagem:
-            peso_triagem += material.get_peso()
-        print(f"  {'triagem':<12} {peso_triagem:>8.2f} kg ({len(self._aguardando_triagem)} itens)")
-        print(f"Ocupação: {self.peso_em_estoque():.2f} de {self._capacidade_kg:.0f} kg ({self.ocupacao():.0f}%)")
+            print(f"  {tipo}: {self.estoque[tipo]} kg")
+        print(f"  esperando triagem: {len(self.triagem)} itens")
+        print(f"Total: {self.peso_total()} de {self.capacidade} kg")
 
     def relatorio(self):
-        recebido_por_tipo = {}
-        for tipo in TIPOS:
-            recebido_por_tipo[tipo] = 0
-        total_recebido = 0
-        volume_total = 0
-        for entrega in self._entregas:
-            material = entrega.material
-            recebido_por_tipo[material.get_tipo()] += material.get_peso()
-            total_recebido += material.get_peso()
-            volume_total += material.volume_estimado()
+        print(f"\nRelatório da {self.nome}")
+        print(f"Total recebido: {self.total_recebido} kg")
+        print(f"Total enviado: {self.total_enviado} kg")
 
-        total_enviado = 0
-        for lote in self._lotes:
-            total_enviado += lote.peso_total()
+        print("\nEntregas por morador:")
+        for morador in self.moradores:
+            print(f"  {morador.nome}: {morador.total_entregue()} kg")
 
-        print(f"\nRelatório de coleta - {self.nome}")
-        print(f"Entregas registradas: {len(self._entregas)}")
-        print(f"Total recebido: {total_recebido:.2f} kg")
-        for tipo in TIPOS:
-            if recebido_por_tipo[tipo] > 0:
-                print(f"  {tipo}: {recebido_por_tipo[tipo]:.2f} kg")
-        print(f"Total enviado: {total_enviado:.2f} kg")
-        print(f"Lotes enviados: {len(self._lotes)}")
-        print(f"Volume estimado que deixou de ir pro lixo: {volume_total:.0f} litros")
-
-        print("\nPor ponto de coleta:")
-        for ponto in self.pontos:
-            print(f"  {ponto.nome}: {ponto.total_recebido_kg():.2f} kg")
-
-        print("\nPor cooperativa:")
+        print("\nLotes por cooperativa:")
         for cooperativa in self.cooperativas:
-            quantidade = len(cooperativa.get_lotes())
-            palavra = "lote" if quantidade == 1 else "lotes"
-            print(f"  {cooperativa.nome}: {cooperativa.total_recebido_kg():.2f} kg em {quantidade} {palavra}")
-
-        ranking = sorted(self.moradores, key=peso_entregue, reverse=True)
-        print("\nMoradores que mais entregaram:")
-        for morador in ranking[:5]:
-            if morador.total_entregue_kg() > 0:
-                print(f"  {morador.nome}: {morador.total_entregue_kg():.2f} kg")
+            print(f"  {cooperativa.nome}: {len(cooperativa.lotes)} lotes")
+            for lote in cooperativa.lotes:
+                print(f"    {lote}")
