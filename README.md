@@ -1,34 +1,18 @@
-# PontoVerde - coleta seletiva comunitária
+# PontoVerde
 
-Mini-projeto do bloco de Python. É um programa de terminal, orientado a objetos, para uma central de reciclagem de bairro controlar o material que recebe dos moradores e o que manda para as cooperativas.
+Mini-projeto do bloco de Python. É um programa de terminal pra uma central de reciclagem do bairro anotar o material que recebe (papel, plástico e vidro) e mandar pra cooperativa quando junta bastante.
 
-## O problema
+## Arquivos
 
-Em muito ponto de coleta comunitário o controle é feito no caderno: quem trouxe o quê, quanto tem guardado, quando dá pra mandar pra cooperativa. Aí acontece de o depósito lotar sem ninguém perceber, de eletrônico ir junto com o resto e ser recusado, ou de não ter nenhum número pra mostrar quanto o bairro reciclou no mês.
+- `materiais.py`: classe `Material` e as filhas `Papel`, `Plastico` e `Vidro`
+- `central.py`: classe `Central`, que recebe os materiais e guarda o estoque
+- `main.py`: menu
 
-O programa resolve isso de um jeito simples:
+Pra rodar: `python main.py`
 
-- registra cada entrega (morador, ponto de coleta, tipo de material, peso e se veio limpo);
-- separa o que precisa de triagem antes de ir pro estoque (material sujo e todo eletrônico);
-- controla o estoque por peso e avisa quando a central passa de 75% e de 90% da capacidade, recusando entregas que não cabem;
-- monta lotes por tipo de material e manda pra uma cooperativa, que só recebe eletrônico se for habilitada;
-- mostra relatório com total recebido, total enviado, volume estimado reciclado e quem mais entregou.
+## O que usei do bloco
 
-Os materiais aceitos são papel, plástico, vidro, metal e eletrônicos.
-
-## Como o código está organizado
-
-- `materiais.py`: `MaterialReciclavel` e as filhas `Papel`, `Plastico`, `Metal`, `Vidro` e `Eletronico`
-- `participantes.py`: `Morador`, `PontoColeta`, `CooperativaDestino`, `Entrega` e `Lote`
-- `central.py`: `CentralReciclagem`, que cuida do estoque, triagem, lotes e relatório
-- `main.py`: menu e leitura do que o usuário digita
-
-Onde aparece cada conteúdo do bloco:
-
-- Herança: cada material herda de `MaterialReciclavel`. O `Vidro` estende `cuidados()` chamando o método da classe mãe e acrescentando o aviso de quebra. O `Eletronico` sobrescreve `precisa_triagem()` e `fazer_triagem()`, porque ele sempre passa por triagem, mesmo limpo.
-- Polimorfismo: a central chama `material.precisa_triagem()`, `material.fazer_triagem()` e `material.volume_estimado()` sem saber qual é o tipo, e cada classe responde do seu jeito.
-- Encapsulamento: peso, tipo, estoque e históricos são atributos com `_` e são acessados por métodos (`get_peso()`, `get_entregas()` etc).
-- Parâmetro opcional: `peso_em_estoque(tipo=None)` devolve o total da central ou só de um tipo, que foi o jeito de "sobrecarga" que vimos pra Python.
-- Laços, funções, condicionais, `match/case`, listas, dicionários e métodos de string (na validação do que é digitado).
-
-
+- Herança: `Papel`, `Plastico` e `Vidro` herdam de `Material`
+- Polimorfismo: cada material tem seu próprio `cuidados()`
+- Encapsulamento: o peso fica em `_peso` e é lido com `get_peso()`
+- Listas, laços, if/else e match/case
