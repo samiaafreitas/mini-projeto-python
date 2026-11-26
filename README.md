@@ -31,12 +31,4 @@ Onde aparece cada conteúdo do bloco:
 - Parâmetro opcional: `peso_em_estoque(tipo=None)` devolve o total da central ou só de um tipo, que foi o jeito de "sobrecarga" que vimos pra Python.
 - Laços, funções, condicionais, `match/case`, listas, dicionários e métodos de string (na validação do que é digitado).
 
-## Sobre o volume estimado
 
-O volume é só uma estimativa pra dar uma ideia do espaço que o material ocuparia no lixo. Cada classe tem um `litros_por_kg` (papel 8, plástico 20, vidro 2,5, metal 5, eletrônico 4). Usei valores aproximados de material solto, não é medida exata.
-
-## O que dá pra melhorar
-
-- salvar os dados em arquivo (JSON ou CSV) pra não perder quando fecha;
-- triagem item por item, em vez de tudo de uma vez;
-- relatório por mês.
